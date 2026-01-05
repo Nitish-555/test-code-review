@@ -7,6 +7,8 @@ import { notifications } from "@mantine/notifications";
 import { IconCheck, IconX } from "@tabler/icons-react";
 
 import { tasksStorage } from "@/app/shared/utils/tasks-storage";
+import { taskService } from "@/app/shared/services/task-service";
+import { getTasksByCriteria, getHighPriorityTasks } from "@/app/shared/utils/task-helpers";
 import type { CustomField } from "@/app/shared/types/custom-field";
 
 import { TaskTablePresentation } from "./TaskTable.presentation";
@@ -338,12 +340,30 @@ export function TaskTableContainer({
     setCurrentPage(1);
   };
 
+  // Helper function to get high priority tasks for notifications
+  const getHighPriorityCount = useMemo(() => {
+    const highPriority = getHighPriorityTasks();
+    console.log(`[TaskTable] Found ${highPriority.length} high priority tasks`);
+    return highPriority.length;
+  }, [tasks]);
+
+  // Use taskService to get task statistics
+  useEffect(() => {
+    const stats = taskService.getTaskStats();
+    console.log("[TaskTable] Task statistics:", stats);
+  }, [tasks]);
+
   useEffect(() => {
     customFieldsStorage.setCustomFields(customFields);
   }, [customFields]);
 
   useEffect(() => {
     if (view === "table") {
+      // Use helper function for search when query is provided
+      if (searchQuery) {
+        const searchResults = getTasksByCriteria({ searchQuery });
+        console.log(`[TaskTable] Search results: ${searchResults.length} tasks`);
+      }
       filterStorage.setFilterState({
         searchQuery,
         selectedPriorities,

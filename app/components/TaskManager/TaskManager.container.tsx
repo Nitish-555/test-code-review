@@ -4,6 +4,7 @@ import { Title, Box, Skeleton, Group } from "@mantine/core";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { tasksStorage } from "@/app/shared/utils/tasks-storage";
+import { taskService } from "@/app/shared/services/task-service";
 import { Task } from "@/app/shared/types/task";
 
 interface TaskManagerContainerProps {
@@ -41,9 +42,15 @@ export function TaskManagerContainer({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedTasks = tasksStorage.getTasks();
-    setTasks(storedTasks.length > 0 ? storedTasks : initialTasks);
+    // Use TaskService instead of direct tasksStorage access
+    const storedTasks = taskService.getAllTasks();
+    const finalTasks = storedTasks.length > 0 ? storedTasks : initialTasks;
+    setTasks(finalTasks);
     setIsLoading(false);
+    
+    // Log task statistics for graph analysis
+    const stats = taskService.getTaskStats();
+    console.log("[TaskManagerContainer] Loaded tasks with stats:", stats);
   }, [initialTasks]);
 
   return (
