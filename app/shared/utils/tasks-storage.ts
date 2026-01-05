@@ -10,7 +10,7 @@ export const tasksStorage = {
     if (tasks.length === 0) {
       return [];
     }
-    return tasks;
+    return tasks.filter((task) => task.status === TaskStatus.COMPLETED);
   },
 
   setTasks: (tasks: Task[]): void => {
