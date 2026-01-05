@@ -5,9 +5,9 @@ import { tasksStorage } from "./tasks-storage";
 /**
  * Get tasks that are overdue (not completed)
  */
-export function getOverdueTasks(): Task[] {
+export function getOverdueTasks(markAllAsDone: boolean): Task[] {
   const tasks = tasksStorage.getTasks();
-  if (tasks.length === 0) {
+  if (tasks.length === 0 || markAllAsDone) {
     return [];
   }
   return tasks.filter((task) => task.status !== TaskStatus.COMPLETED);
