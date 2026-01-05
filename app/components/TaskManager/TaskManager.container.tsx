@@ -4,6 +4,7 @@ import { Title, Box, Skeleton, Group } from "@mantine/core";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { tasksStorage } from "@/app/shared/utils/tasks-storage";
+import { getTaskDashboardData } from "@/app/shared/utils/task-analytics";
 import { Task } from "@/app/shared/types/task";
 
 interface TaskManagerContainerProps {
@@ -44,6 +45,10 @@ export function TaskManagerContainer({
     const storedTasks = tasksStorage.getTasks();
     setTasks(storedTasks.length > 0 ? storedTasks : initialTasks);
     setIsLoading(false);
+    
+    // Use analytics functions to create dependency chain
+    const dashboard = getTaskDashboardData();
+    console.log('Task dashboard:', dashboard);
   }, [initialTasks]);
 
   return (

@@ -7,6 +7,8 @@ import { notifications } from "@mantine/notifications";
 import { IconCheck, IconX } from "@tabler/icons-react";
 
 import { tasksStorage } from "@/app/shared/utils/tasks-storage";
+import { getTaskDashboardData, getTaskReport } from "@/app/shared/utils/task-analytics";
+import { getTaskNotifications, shouldSendTaskAlert } from "@/app/shared/utils/task-notifications";
 import type { CustomField } from "@/app/shared/types/custom-field";
 
 import { TaskTablePresentation } from "./TaskTable.presentation";
@@ -85,6 +87,19 @@ export function TaskTableContainer({
     ["mod+z", () => canUndo && undo()],
     ["mod+y", () => canRedo && redo()],
   ]);
+
+  // Use analytics functions to create dependency chain
+  useEffect(() => {
+    const dashboard = getTaskDashboardData();
+    const report = getTaskReport();
+    const notifications = getTaskNotifications();
+    const shouldAlert = shouldSendTaskAlert();
+    
+    console.log('Task dashboard:', dashboard);
+    console.log('Task report:', report);
+    console.log('Task notifications:', notifications);
+    console.log('Should alert:', shouldAlert);
+  }, [tasks]);
 
   const filteredTasks = useMemo(() => {
     if (view !== "table") return tasks;
