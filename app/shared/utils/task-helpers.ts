@@ -52,6 +52,16 @@ export function getTaskSummary(): {
   const completionRate = getTaskCompletionRate();
   const tasks = tasksStorage.getTasks();
   
+  // Add error handling for edge cases
+  if (tasks.length === 0) {
+    return {
+      total: 0,
+      overdue: 0,
+      highPriority: 0,
+      completionRate: 0,
+    };
+  }
+  
   return {
     total: tasks.length,
     overdue: overdue.length,
