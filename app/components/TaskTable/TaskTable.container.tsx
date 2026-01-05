@@ -7,6 +7,7 @@ import { notifications } from "@mantine/notifications";
 import { IconCheck, IconX } from "@tabler/icons-react";
 
 import { tasksStorage } from "@/app/shared/utils/tasks-storage";
+import { getTaskDashboardData, getTaskAnalytics } from "@/app/shared/utils/task-analytics";
 import type { CustomField } from "@/app/shared/types/custom-field";
 
 import { TaskTablePresentation } from "./TaskTable.presentation";
@@ -85,6 +86,14 @@ export function TaskTableContainer({
     ["mod+z", () => canUndo && undo()],
     ["mod+y", () => canRedo && redo()],
   ]);
+
+  // Use analytics functions to create dependency chain
+  useEffect(() => {
+    const dashboard = getTaskDashboardData();
+    const analytics = getTaskAnalytics();
+    console.log('Task dashboard:', dashboard);
+    console.log('Task analytics:', analytics);
+  }, [tasks]);
 
   const filteredTasks = useMemo(() => {
     if (view !== "table") return tasks;
