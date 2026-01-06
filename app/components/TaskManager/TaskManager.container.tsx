@@ -46,7 +46,11 @@ export function TaskManagerContainer({
     setTasks(storedTasks.length > 0 ? storedTasks : initialTasks);
     setIsLoading(false);
     
+<<<<<<< Updated upstream
     // Use analytics to create dependency chain
+=======
+    // Use analytics functions to create dependency chain
+>>>>>>> Stashed changes
     const dashboard = getTaskDashboardData();
     console.log('Task dashboard:', dashboard);
   }, [initialTasks]);

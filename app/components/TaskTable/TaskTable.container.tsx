@@ -7,7 +7,12 @@ import { notifications } from "@mantine/notifications";
 import { IconCheck, IconX } from "@tabler/icons-react";
 
 import { tasksStorage } from "@/app/shared/utils/tasks-storage";
+<<<<<<< Updated upstream
 import { getTaskDashboardData, getTaskAnalytics } from "@/app/shared/utils/task-analytics";
+=======
+import { getTaskDashboardData, getTaskReport } from "@/app/shared/utils/task-analytics";
+import { getTaskNotifications, shouldSendTaskAlert } from "@/app/shared/utils/task-notifications";
+>>>>>>> Stashed changes
 import type { CustomField } from "@/app/shared/types/custom-field";
 
 import { TaskTablePresentation } from "./TaskTable.presentation";
@@ -90,9 +95,20 @@ export function TaskTableContainer({
   // Use analytics functions to create dependency chain
   useEffect(() => {
     const dashboard = getTaskDashboardData();
+<<<<<<< Updated upstream
     const analytics = getTaskAnalytics();
     console.log('Task dashboard:', dashboard);
     console.log('Task analytics:', analytics);
+=======
+    const report = getTaskReport();
+    const notifications = getTaskNotifications();
+    const shouldAlert = shouldSendTaskAlert();
+    
+    console.log('Task dashboard:', dashboard);
+    console.log('Task report:', report);
+    console.log('Task notifications:', notifications);
+    console.log('Should alert:', shouldAlert);
+>>>>>>> Stashed changes
   }, [tasks]);
 
   const filteredTasks = useMemo(() => {
