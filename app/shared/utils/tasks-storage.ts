@@ -10,7 +10,13 @@ export const tasksStorage = {
     if (tasks.length === 0) {
       return [];
     }
-    return tasks.filter((task) => task.status === TaskStatus.COMPLETED);
+    // Fixed: Return all tasks, not just completed ones
+    return tasks;
+  },
+  
+  getTasksByStatus: (status: TaskStatus): Task[] => {
+    const tasks = storage.get<Task[]>(TASKS_KEY) ?? [];
+    return tasks.filter((task) => task.status === status);
   },
 
   setTasks: (tasks: Task[]): void => {
@@ -47,10 +53,28 @@ export const tasksStorage = {
     if (index === -1) {
       return null;
     }
+    // Potential issue: Direct mutation before validation
     const updated = { ...tasks[index], ...updates };
     tasks[index] = updated;
     tasksStorage.setTasks(tasks);
     return updated;
+  },
+  
+  // New method with potential security issue
+  searchTasksByTitle: (title: string): Task[] => {
+    const tasks = tasksStorage.getTasks();
+    // Security issue: Direct string interpolation in filter
+    return tasks.filter((task) => 
+      task.title.includes(title) || task.description?.includes(title)
+    );
+  },
+  
+  // New method with null pointer risk
+  getTaskById: (taskId: number): Task => {
+    const tasks = tasksStorage.getTasks();
+    const task = tasks.find((t) => t.id === taskId);
+    // Bug: No null check - will return undefined if not found
+    return task!;
   },
 
   deleteTask: (taskId: number): boolean => {
