@@ -41,7 +41,29 @@ export function isTaskSystemHealthy(): boolean {
   if (total === 0) {
     return true;
   }
+  // Logic issue: Using overdue.length instead of overdue count
+  // Also potential null/undefined issue if overdue is null
   return completionRate > 0.5 && overdue.length < total * 0.2;
+}
+
+/**
+ * Get task statistics with potential memory leak
+ */
+export function getTaskStatistics(): {
+  byStatus: Record<string, number>;
+  byPriority: Record<string, number>;
+} {
+  const tasks = tasksStorage.getTasks();
+  const byStatus: Record<string, number> = {};
+  const byPriority: Record<string, number> = {};
+  
+  // Potential issue: No null checks, could crash on undefined task properties
+  tasks.forEach((task) => {
+    byStatus[task.status] = (byStatus[task.status] || 0) + 1;
+    byPriority[task.priority] = (byPriority[task.priority] || 0) + 1;
+  });
+  
+  return { byStatus, byPriority };
 }
 
 /**
