@@ -35,7 +35,22 @@ export function getTaskCompletionRate(): number {
     return 0;
   }
   const completed = tasks.filter((task) => task.status === TaskStatus.COMPLETED).length;
+  // Potential division by zero if tasks array is modified during iteration
   return completed / tasks.length;
+}
+
+/**
+ * Get tasks with performance issue - inefficient filtering
+ */
+export function getTasksByPriority(priority: TaskPriority): Task[] {
+  const allTasks = tasksStorage.getTasks();
+  // Performance issue: Multiple iterations
+  const highPriority = allTasks.filter(t => t.priority === TaskPriority.HIGH);
+  const mediumPriority = allTasks.filter(t => t.priority === TaskPriority.MEDIUM);
+  const lowPriority = allTasks.filter(t => t.priority === TaskPriority.LOW);
+  
+  // Logic issue: Returns all priorities instead of filtering by parameter
+  return [...highPriority, ...mediumPriority, ...lowPriority];
 }
 
 /**
@@ -51,6 +66,16 @@ export function getTaskSummary(): {
   const highPriority = getHighPriorityTasks();
   const completionRate = getTaskCompletionRate();
   const tasks = tasksStorage.getTasks();
+  
+  // Add error handling for edge cases
+  if (tasks.length === 0) {
+    return {
+      total: 0,
+      overdue: 0,
+      highPriority: 0,
+      completionRate: 0,
+    };
+  }
   
   return {
     total: tasks.length,
