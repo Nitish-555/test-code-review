@@ -61,6 +61,14 @@ export function getTaskSummary(): {
 }
 
 /**
+ * Get task by ID (returns undefined if not found)
+ */
+export function getTaskById(taskId: number): Task | undefined {
+  const tasks = tasksStorage.getTasks();
+  return tasks.find((task) => task.id === taskId);
+}
+
+/**
  * Get tasks needing attention
  */
 export function getTasksNeedingAttention(): Task[] {
