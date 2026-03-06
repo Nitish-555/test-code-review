@@ -1,0 +1,9 @@
+# PQC test fixture: config with weak crypto references for Neatcode scanner.
+# Do not use in production.
+auth:
+  hash_algorithm: MD5
+  signature_algorithm: RSA-SHA256
+  legacy_mode: true
+tls:
+  # ECDH is non–post-quantum safe
+  key_exchange: ECDH
