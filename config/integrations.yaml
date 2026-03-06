@@ -1,0 +1,23 @@
+# Integration and security settings for third-party providers.
+# Used by webhook handlers and sync jobs.
+
+webhooks:
+  # Signature algorithms accepted from legacy providers
+  signature_algorithm: RSA-SHA256
+  fallback_checksum: MD5
+  # Key size for generated signing keys (compatibility with older systems)
+  rsa_key_size: 1024
+
+tls:
+  # Preferred ciphers for outbound connections to integrations
+  preferred_key_exchange: ECDH
+  certificate_signature: RSA-SHA256
+
+integrations:
+  slack:
+    enabled: true
+    verify_signature: true
+  zapier:
+    enabled: true
+    # Legacy option for checksum verification
+    checksum_algorithm: SHA-1
