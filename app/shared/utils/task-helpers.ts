@@ -3,14 +3,21 @@ import { TaskPriority, TaskStatus } from "../types/enums";
 import { tasksStorage } from "./tasks-storage";
 
 /**
- * Get tasks that are overdue (not completed)
+ * Get tasks that are overdue (have dueDate in the past and are not completed).
  */
 export function getOverdueTasks(): Task[] {
   const tasks = tasksStorage.getTasks();
   if (tasks.length === 0) {
     return [];
   }
-  return tasks.filter((task) => task.status !== TaskStatus.COMPLETED);
+  const today = new Date().toISOString().slice(0, 10);
+  return tasks.filter(
+    (task) =>
+      task.dueDate != null &&
+      task.dueDate !== "" &&
+      task.dueDate < today &&
+      task.status !== TaskStatus.COMPLETED
+  );
 }
 
 /**

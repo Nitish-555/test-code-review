@@ -16,6 +16,7 @@ export function CustomFieldsManager(props: CustomFieldsManagerProps) {
             field.name.toLowerCase() === String(values.name).toLowerCase()
         )
       ) {
+        console.log("A field with this name already exists");
         throw new Error("A field with this name already exists");
       }
 
