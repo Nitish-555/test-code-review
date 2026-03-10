@@ -164,6 +164,19 @@ export function KanbanBoardPresentation({
                         <Text size="xs" c="dimmed" className={styles.status}>
                           {task.status.replace("_", " ")}
                         </Text>
+                        {task.dueDate && (
+                          <Text size="xs" c="dimmed" className={styles.dueDate}>
+                            Due:{" "}
+                            {new Date(
+                              task.dueDate + "T12:00:00"
+                            ).toLocaleDateString()}
+                            {task.status !== "completed" &&
+                              task.dueDate <
+                                new Date().toISOString().slice(0, 10) && (
+                                <span className={styles.overdue}> Overdue</span>
+                              )}
+                          </Text>
+                        )}
                       </div>
                       <Button
                         variant="subtle"

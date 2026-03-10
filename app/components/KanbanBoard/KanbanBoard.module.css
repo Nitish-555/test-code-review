@@ -66,6 +66,16 @@
   text-transform: capitalize;
 }
 
+.dueDate {
+  margin-top: var(--mantine-spacing-xs);
+  display: block;
+}
+
+.overdue {
+  color: var(--mantine-color-red-6);
+  font-weight: 600;
+}
+
 .addButton {
   margin: var(--mantine-spacing-sm);
 }

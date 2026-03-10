@@ -34,6 +34,7 @@ export enum FieldType {
   CHECKBOX = "checkbox",
   NUMBER = "number",
   SELECT = "select",
+  DATE = "date",
 }
 
 export enum Size {
