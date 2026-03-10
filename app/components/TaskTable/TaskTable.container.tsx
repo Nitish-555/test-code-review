@@ -172,6 +172,17 @@ export function TaskTableContainer({
         return isAsc ? statusA - statusB : statusB - statusA;
       }
 
+      if (column === "dueDate") {
+        const aDate = a.dueDate || "";
+        const bDate = b.dueDate || "";
+        if (!aDate && !bDate) return 0;
+        if (!aDate) return isAsc ? 1 : -1;
+        if (!bDate) return isAsc ? -1 : 1;
+        return isAsc
+          ? aDate.localeCompare(bDate)
+          : bDate.localeCompare(aDate);
+      }
+
       aValue = String(aValue || "");
       bValue = String(bValue || "");
       return isAsc
