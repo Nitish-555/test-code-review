@@ -32,7 +32,11 @@ interface SelectField extends BaseField {
   placeholder?: string;
 }
 
-type Field = TextField | RadioField | CheckboxField | NumberField | SelectField;
+interface DateField extends BaseField {
+  type: FieldType.DATE;
+}
+
+type Field = TextField | RadioField | CheckboxField | NumberField | SelectField | DateField;
 
 interface FormProps {
   fields: Field[];

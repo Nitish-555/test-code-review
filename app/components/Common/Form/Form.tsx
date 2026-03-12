@@ -126,6 +126,22 @@ export function Form({
             </select>
           </div>
         );
+      case "date":
+        return (
+          <TextInput
+            key={field.name}
+            type="date"
+            required={field.required}
+            label={field.label}
+            value={String(formData[field.name] || "")}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, [field.name]: e.target.value }))
+            }
+            className={styles.input}
+            aria-label={field.label}
+            id={field.name}
+          />
+        );
       default:
         return null;
     }
