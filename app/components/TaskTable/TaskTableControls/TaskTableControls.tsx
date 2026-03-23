@@ -12,6 +12,9 @@ interface TaskTableControlsProps {
   onPrioritiesChange: (values: string[]) => void;
   selectedStatuses: string[];
   onStatusesChange: (values: string[]) => void;
+  labelOptions: string[];
+  selectedLabels: string[];
+  onLabelsChange: (values: string[]) => void;
 }
 
 export function TaskTableControls({
@@ -21,6 +24,9 @@ export function TaskTableControls({
   onPrioritiesChange,
   selectedStatuses,
   onStatusesChange,
+  labelOptions,
+  selectedLabels,
+  onLabelsChange,
 }: TaskTableControlsProps) {
   const priorityOptions = useMemo(
     () => [
@@ -40,6 +46,11 @@ export function TaskTableControls({
       { value: "completed", label: "Completed" },
     ],
     []
+  );
+
+  const labelSelectData = useMemo(
+    () => labelOptions.map((l) => ({ value: l, label: l })),
+    [labelOptions]
   );
 
   return (
@@ -73,6 +84,18 @@ export function TaskTableControls({
         placeholder="Filter by status"
         clearable
         aria-label="Filter tasks by status"
+      />
+      <MultiSelect
+        className={styles.filterSelect}
+        data={labelSelectData}
+        value={selectedLabels}
+        onChange={onLabelsChange}
+        placeholder="Filter by label"
+        clearable
+        searchable
+        nothingFoundMessage="No labels yet"
+        aria-label="Filter tasks by label"
+        disabled={labelSelectData.length === 0}
       />
     </Group>
   );

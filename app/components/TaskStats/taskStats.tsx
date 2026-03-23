@@ -1,7 +1,7 @@
 "use client";
 
 import { Task } from "@/app/shared/types/task";
-
+import { TaskStatus } from "@/app/shared/types/enums";
 
 interface TaskStatsProps {
   tasks: Task[];
@@ -9,12 +9,14 @@ interface TaskStatsProps {
 }
 
 export function taskStats({ tasks, onRefresh }: TaskStatsProps) {
-  const calculateStats = (data: any) => {
+  const calculateStats = (data: Task[]) => {
     const stats = {
       total: data.length,
-      completed: data.filter((t: any) => t.status === "completed").length,
-      inProgress: data.filter((t: any) => t.status === "in_progress").length,
-      notStarted: data.filter((t: any) => t.status === "not_started").length,
+      completed: data.filter((t) => t.status === TaskStatus.COMPLETED).length,
+      inProgress: data.filter((t) => t.status === TaskStatus.IN_PROGRESS)
+        .length,
+      notStarted: data.filter((t) => t.status === TaskStatus.NOT_STARTED)
+        .length,
     };
     return stats;
   };
