@@ -4,7 +4,7 @@ import { Task } from "@/app/shared/types/task";
 import { Box, Button, Group, Text, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { IconCheck, IconX } from "@tabler/icons-react";
+import { IconCheck, IconDownload, IconX } from "@tabler/icons-react";
 
 import { tasksStorage } from "@/app/shared/utils/tasks-storage";
 import { getTaskDashboardData, getTaskAnalytics } from "@/app/shared/utils/task-analytics";
@@ -28,6 +28,14 @@ import { KanbanBoard } from "../KanbanBoard";
 import { customFieldsStorage } from "@/app/shared/utils/custom-fields-storage";
 import { filterStorage } from "@/app/shared/utils/filter-storage";
 import { taskStats as TaskStats } from "../TaskStats/taskStats";
+import {
+  collectDistinctLabels,
+  labelsSortKey,
+  normalizeTask,
+  taskMatchesLabelFilter,
+  getTaskLabels,
+} from "@/app/shared/utils/task-labels";
+import { downloadCsvFile, tasksToCsv } from "@/app/shared/utils/csv-export";
 
 export function TaskTableContainer({
   tasks: initialTasks,
@@ -56,6 +64,10 @@ export function TaskTableContainer({
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(() => {
     const savedState = filterStorage.getFilterState();
     return savedState.selectedStatuses || [];
+  });
+  const [selectedLabels, setSelectedLabels] = useState<string[]>(() => {
+    const savedState = filterStorage.getFilterState();
+    return savedState.selectedLabels || [];
   });
   const [sortColumn, setSortColumn] = useState<string | undefined>(() => {
     const savedState = filterStorage.getFilterState();
@@ -95,22 +107,41 @@ export function TaskTableContainer({
     console.log('Task analytics:', analytics);
   }, [tasks]);
 
+  const labelOptions = useMemo(
+    () => collectDistinctLabels(tasks),
+    [tasks]
+  );
+
   const filteredTasks = useMemo(() => {
     if (view !== "table") return tasks;
 
+    const q = searchQuery.toLowerCase().trim();
+
     return tasks.filter((task) => {
-      const matchesSearch = task.title
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+      const matchesSearch =
+        q.length === 0 ||
+        task.title.toLowerCase().includes(q) ||
+        task.id.toString().includes(q) ||
+        getTaskLabels(task).some((label) => label.toLowerCase().includes(q));
       const matchesPriority =
         selectedPriorities.length === 0 ||
         selectedPriorities.includes(task.priority);
       const matchesStatus =
         selectedStatuses.length === 0 || selectedStatuses.includes(task.status);
+      const matchesLabels = taskMatchesLabelFilter(task, selectedLabels);
 
-      return matchesSearch && matchesPriority && matchesStatus;
+      return (
+        matchesSearch && matchesPriority && matchesStatus && matchesLabels
+      );
     });
-  }, [tasks, searchQuery, selectedPriorities, selectedStatuses, view]);
+  }, [
+    tasks,
+    searchQuery,
+    selectedPriorities,
+    selectedStatuses,
+    selectedLabels,
+    view,
+  ]);
 
   const paginatedTasks = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
@@ -127,6 +158,14 @@ export function TaskTableContainer({
     const fieldName = customField?.name || column;
 
     const sortedTasks = [...tasks].sort((a, b) => {
+      if (column === "labels") {
+        const aKey = labelsSortKey(a);
+        const bKey = labelsSortKey(b);
+        return isAsc
+          ? aKey.localeCompare(bKey)
+          : bKey.localeCompare(aKey);
+      }
+
       let aValue: string | number = String(a[column as keyof Task] || "");
       let bValue: string | number = String(b[column as keyof Task] || "");
 
@@ -183,10 +222,10 @@ export function TaskTableContainer({
   };
 
   const handleCreateTask = (newTask: Omit<Task, "id">) => {
-    const taskWithId: Task = {
+    const taskWithId: Task = normalizeTask({
       ...newTask,
       id: Math.max(...tasks.map((t) => t.id), 0) + 1,
-    };
+    });
     addToHistory({
       type: "CREATE",
       data: taskWithId,
@@ -209,8 +248,9 @@ export function TaskTableContainer({
   };
 
   const handleUpdateTask = (taskData: Omit<Task, "id"> | Task) => {
-    const task =
+    const raw =
       "id" in taskData ? taskData : { ...taskData, id: editingTask!.id };
+    const task = normalizeTask(raw);
     console.log("Updating task:", task);
     const updatedTasks = tasks.map((t) => (t.id === task.id ? task : t));
     setTasks(updatedTasks);
@@ -289,6 +329,7 @@ export function TaskTableContainer({
 
       return {
         ...task,
+        labels: getTaskLabels(task),
         customFields: {
           ...task.customFields,
           [newField.name]: defaultValue(),
@@ -347,6 +388,23 @@ export function TaskTableContainer({
     setCurrentPage(1);
   };
 
+  const handleLabelsChange = (values: string[]) => {
+    setSelectedLabels(values);
+    setCurrentPage(1);
+  };
+
+  const handleExportCsv = () => {
+    const csv = tasksToCsv(filteredTasks, customFields);
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+    downloadCsvFile(`tasks-export-${stamp}.csv`, csv);
+    notifications.show({
+      title: "CSV exported",
+      message: `Exported ${filteredTasks.length} task(s) matching current filters.`,
+      color: "teal",
+      icon: <IconCheck size={16} />,
+    });
+  };
+
   useEffect(() => {
     customFieldsStorage.setCustomFields(customFields);
   }, [customFields]);
@@ -357,6 +415,7 @@ export function TaskTableContainer({
         searchQuery,
         selectedPriorities,
         selectedStatuses,
+        selectedLabels,
         sortColumn,
         sortDirection,
         currentPage,
@@ -367,6 +426,7 @@ export function TaskTableContainer({
     searchQuery,
     selectedPriorities,
     selectedStatuses,
+    selectedLabels,
     sortColumn,
     sortDirection,
     currentPage,
@@ -398,6 +458,14 @@ export function TaskTableContainer({
           >
             Manage Custom Fields
           </Button>
+          <Button
+            variant="light"
+            leftSection={<IconDownload size={16} />}
+            onClick={handleExportCsv}
+            aria-label="Export filtered tasks to CSV"
+          >
+            Export CSV
+          </Button>
         </Group>
         <ViewToggle
           view={view as ViewMode}
@@ -424,6 +492,9 @@ export function TaskTableContainer({
             onPrioritiesChange={handlePrioritiesChange}
             selectedStatuses={selectedStatuses}
             onStatusesChange={handleStatusesChange}
+            labelOptions={labelOptions}
+            selectedLabels={selectedLabels}
+            onLabelsChange={handleLabelsChange}
           />
           <TaskTablePresentation
             tasks={paginatedTasks}

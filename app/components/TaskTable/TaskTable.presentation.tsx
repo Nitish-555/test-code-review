@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { ActionIcon, Group, Tooltip } from "@mantine/core";
+import { ActionIcon, Badge, Group, Tooltip } from "@mantine/core";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 import type { Task } from "@/app/shared/types/task";
 import type { CustomField } from "@/app/shared/types/custom-field";
@@ -9,6 +9,7 @@ import type { CustomField } from "@/app/shared/types/custom-field";
 import { Table } from "../Common/Table/Table";
 import styles from "./TaskTable.module.css";
 import { SortDirection } from "@/app/shared/types/enums";
+import { getTaskLabels } from "@/app/shared/utils/task-labels";
 
 interface TaskTablePresentationProps {
   tasks: Task[];
@@ -53,6 +54,26 @@ export function TaskTablePresentation({
         render: (task: Task) => (
           <span className={styles[`status-${task.status}`]}>{task.status}</span>
         ),
+        sortable: true,
+      },
+      {
+        key: "labels",
+        header: "Labels",
+        render: (task: Task) => {
+          const labels = getTaskLabels(task);
+          if (labels.length === 0) {
+            return <span className={styles.labelEmpty}>—</span>;
+          }
+          return (
+            <Group gap={4} wrap="wrap">
+              {labels.map((label) => (
+                <Badge key={label} size="sm" variant="light" radius="sm">
+                  {label}
+                </Badge>
+              ))}
+            </Group>
+          );
+        },
         sortable: true,
       },
       ...customFields.map((field) => ({

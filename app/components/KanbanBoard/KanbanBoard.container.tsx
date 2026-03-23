@@ -7,6 +7,7 @@ import { DragEvent, useState, useEffect } from "react";
 import type { KanbanBoardProps, ColumnConfig } from "./KanbanBoard.types";
 import { KanbanBoardPresentation } from "./KanbanBoard.presentation";
 import { useDisclosure } from "@mantine/hooks";
+import { getTaskLabels } from "@/app/shared/utils/task-labels";
 
 // These are the options users can select from when filtering tasks by status
 // I'm using human-readable labels for the UI while keeping enum values for the backend
@@ -210,11 +211,11 @@ export function KanbanBoardContainer({
       );
     }
     if (config.filters?.search) {
-      // Case-insensitive search in task titles
-      filtered = filtered.filter((task) =>
-        task.title
-          .toLowerCase()
-          .includes(config.filters?.search?.toLowerCase() ?? "")
+      const needle = (config.filters.search ?? "").toLowerCase();
+      filtered = filtered.filter(
+        (task) =>
+          task.title.toLowerCase().includes(needle) ||
+          getTaskLabels(task).some((l) => l.toLowerCase().includes(needle))
       );
     }
 
@@ -288,6 +289,7 @@ export function KanbanBoardContainer({
                 title: "",
                 priority: newTaskPriority,
                 status: TaskStatus.NOT_STARTED,
+                labels: [],
                 customFields: {},
               }
             : undefined

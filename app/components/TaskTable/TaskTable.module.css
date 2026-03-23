@@ -161,3 +161,7 @@
   color: var(--mantine-color-gray-4);
   cursor: not-allowed;
 }
+
+.labelEmpty {
+  color: var(--mantine-color-gray-5);
+}
