@@ -1,6 +1,6 @@
 import { Task } from "../types/task";
-import { TaskStatus, TaskPriority } from "../types/enums";
 import { storage } from "./storage";
+import { getTaskLabels, normalizeTask } from "./task-labels";
 
 const TASKS_KEY = "tasks";
 
@@ -10,14 +10,14 @@ export const tasksStorage = {
     if (tasks.length === 0) {
       return [];
     }
-    return tasks;
+    return tasks.map((t) => normalizeTask(t));
   },
 
   setTasks: (tasks: Task[]): void => {
     if (!Array.isArray(tasks)) {
       throw new Error("Tasks must be an array");
     }
-    storage.set(TASKS_KEY, tasks);
+    storage.set(TASKS_KEY, tasks.map((t) => normalizeTask(t)));
   },
 
   searchTasks: (query: string): Task[] => {
@@ -26,11 +26,17 @@ export const tasksStorage = {
     if (lowerQuery.length === 0) {
       return tasks;
     }
-    return tasks.filter(
-      (task) =>
+    return tasks.filter((task) => {
+      if (
         task.title.toLowerCase().includes(lowerQuery) ||
         task.id.toString().includes(lowerQuery)
-    );
+      ) {
+        return true;
+      }
+      return getTaskLabels(task).some((label) =>
+        label.toLowerCase().includes(lowerQuery)
+      );
+    });
   },
 
   filterTasks: (predicate: (task: Task) => boolean): Task[] => {

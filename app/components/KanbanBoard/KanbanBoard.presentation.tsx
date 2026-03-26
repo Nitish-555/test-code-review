@@ -3,6 +3,7 @@
 import { Task } from "@/app/shared/types/task";
 import { TaskPriority } from "@/app/shared/types/enums";
 import {
+  Badge,
   Group,
   Stack,
   Text,
@@ -16,6 +17,7 @@ import { IconPlus, IconTrash, IconSearch } from "@tabler/icons-react";
 import { DragEvent } from "react";
 import styles from "./KanbanBoard.module.css";
 import type { ColumnConfig } from "./KanbanBoard.types";
+import { getTaskLabels } from "@/app/shared/utils/task-labels";
 
 interface KanbanBoardPresentationProps {
   priorityColumns: TaskPriority[];
@@ -132,50 +134,67 @@ export function KanbanBoardPresentation({
                 role="list"
                 aria-label={`${priority} priority tasks`}
               >
-                {getFilteredAndSortedTasks(priority).map((task, index) => (
-                  <div
-                    key={task.id}
-                    className={styles.card}
-                    draggable
-                    onDragStart={(e) => onDragStart(e, task)}
-                    onDragEnd={onDragEnd}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      e.currentTarget.style.transform = "translateY(2px)";
-                    }}
-                    onDragLeave={(e) => {
-                      e.currentTarget.style.transform = "";
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      e.currentTarget.style.transform = "";
-                      onDrop(e, priority, index);
-                    }}
-                    role="listitem"
-                    aria-label={`Task: ${task.title}, Status: ${task.status}`}
-                  >
-                    <Group justify="space-between" align="start">
-                      <div>
-                        <Text size="sm" fw={500}>
-                          {task.title}
-                        </Text>
-                        <Text size="xs" c="dimmed" className={styles.status}>
-                          {task.status.replace("_", " ")}
-                        </Text>
-                      </div>
-                      <Button
-                        variant="subtle"
-                        color="red"
-                        size="xs"
-                        onClick={() => onDeleteTask(task.id)}
-                      >
-                        <IconTrash size={14} />
-                      </Button>
-                    </Group>
-                  </div>
-                ))}
+                {getFilteredAndSortedTasks(priority).map((task, index) => {
+                  const labels = getTaskLabels(task);
+                  return (
+                    <div
+                      key={task.id}
+                      className={styles.card}
+                      draggable
+                      onDragStart={(e) => onDragStart(e, task)}
+                      onDragEnd={onDragEnd}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.currentTarget.style.transform = "translateY(2px)";
+                      }}
+                      onDragLeave={(e) => {
+                        e.currentTarget.style.transform = "";
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.currentTarget.style.transform = "";
+                        onDrop(e, priority, index);
+                      }}
+                      role="listitem"
+                      aria-label={`Task: ${task.title}, Status: ${task.status}`}
+                    >
+                      <Group justify="space-between" align="start">
+                        <Stack gap={6} style={{ minWidth: 0 }}>
+                          <Text size="sm" fw={500}>
+                            {task.title}
+                          </Text>
+                          <Text size="xs" c="dimmed" className={styles.status}>
+                            {task.status.replace("_", " ")}
+                          </Text>
+                          {labels.length > 0 ? (
+                            <Group gap={4} wrap="wrap">
+                              {labels.map((label) => (
+                                <Badge
+                                  key={label}
+                                  size="xs"
+                                  variant="light"
+                                  radius="sm"
+                                >
+                                  {label}
+                                </Badge>
+                              ))}
+                            </Group>
+                          ) : null}
+                        </Stack>
+                        <Button
+                          variant="subtle"
+                          color="red"
+                          size="xs"
+                          onClick={() => onDeleteTask(task.id)}
+                        >
+                          <IconTrash size={14} />
+                        </Button>
+                      </Group>
+                    </div>
+                  );
+                })}
               </div>
               <Button
                 variant="light"

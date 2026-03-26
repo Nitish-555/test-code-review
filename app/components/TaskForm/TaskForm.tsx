@@ -1,11 +1,12 @@
 "use client";
 
-import { Modal } from "@mantine/core";
+import { Modal, Stack, TagsInput, Text } from "@mantine/core";
 import { Form } from "../Common/Form/Form";
 import { Field } from "../Common/Form/Form.types";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { TaskFormProps } from "./TaskForm.types";
 import { FieldType, TaskPriority, TaskStatus } from "@/app/shared/types/enums";
+import { MAX_LABELS_PER_TASK, normalizeLabels } from "@/app/shared/utils/task-labels";
 
 export function TaskForm({
   opened,
@@ -15,6 +16,13 @@ export function TaskForm({
   title,
   customFields = [],
 }: TaskFormProps) {
+  const [labelTags, setLabelTags] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!opened) return;
+    setLabelTags(normalizeLabels(initialValues?.labels));
+  }, [opened, initialValues]);
+
   const fields: Field[] = useMemo(
     () => [
       {
@@ -92,6 +100,7 @@ export function TaskForm({
       title: String(values.title),
       priority: String(values.priority) as TaskPriority,
       status: String(values.status) as TaskStatus,
+      labels: normalizeLabels(labelTags),
       customFields: customFieldValues,
     });
   };
@@ -109,20 +118,34 @@ export function TaskForm({
         },
       }}
     >
-      <Form
-        fields={fields}
-        onSubmit={handleSubmit}
-        initialValues={
-          initialValues && {
-            title: initialValues.title ?? "",
-            priority: initialValues.priority ?? TaskPriority.NONE,
-            status: initialValues.status ?? TaskStatus.NOT_STARTED,
-            ...(initialValues.customFields ?? {}),
+      <Stack gap="md">
+        <Form
+          fields={fields}
+          onSubmit={handleSubmit}
+          initialValues={
+            initialValues && {
+              title: initialValues.title ?? "",
+              priority: initialValues.priority ?? TaskPriority.NONE,
+              status: initialValues.status ?? TaskStatus.NOT_STARTED,
+              ...(initialValues.customFields ?? {}),
+            }
           }
-        }
-        onCancel={onClose}
-        submitLabel="Save Task"
-      />
+          onCancel={onClose}
+          submitLabel="Save Task"
+        />
+        <div>
+          <Text size="sm" fw={500} mb={6}>
+            Labels
+          </Text>
+          <TagsInput
+            placeholder="Add labels"
+            value={labelTags}
+            onChange={setLabelTags}
+            maxTags={MAX_LABELS_PER_TASK}
+            aria-label="Task labels"
+          />
+        </div>
+      </Stack>
     </Modal>
   );
 }
