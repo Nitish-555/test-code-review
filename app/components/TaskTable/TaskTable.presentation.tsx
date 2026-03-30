@@ -55,6 +55,15 @@ export function TaskTablePresentation({
         ),
         sortable: true,
       },
+      {
+        key: "dueDate",
+        header: "Due date",
+        render: (task: Task) =>
+          task.dueDate
+            ? new Date(task.dueDate + "T12:00:00").toLocaleDateString()
+            : "-",
+        sortable: true,
+      },
       ...customFields.map((field) => ({
         key: field.id,
         header: field.name,

@@ -4,7 +4,7 @@ import { Task } from "@/app/shared/types/task";
 import { Box, Button, Group, Text, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { IconCheck, IconX } from "@tabler/icons-react";
+import { IconCheck, IconX, IconDownload } from "@tabler/icons-react";
 
 import { tasksStorage } from "@/app/shared/utils/tasks-storage";
 import { getTaskDashboardData, getTaskAnalytics } from "@/app/shared/utils/task-analytics";
@@ -170,6 +170,17 @@ export function TaskTableContainer({
         const statusA = STATUS_ORDER[aValue as keyof typeof STATUS_ORDER];
         const statusB = STATUS_ORDER[bValue as keyof typeof STATUS_ORDER];
         return isAsc ? statusA - statusB : statusB - statusA;
+      }
+
+      if (column === "dueDate") {
+        const aDate = a.dueDate || "";
+        const bDate = b.dueDate || "";
+        if (!aDate && !bDate) return 0;
+        if (!aDate) return isAsc ? 1 : -1;
+        if (!bDate) return isAsc ? -1 : 1;
+        return isAsc
+          ? aDate.localeCompare(bDate)
+          : bDate.localeCompare(aDate);
       }
 
       aValue = String(aValue || "");
@@ -347,6 +358,28 @@ export function TaskTableContainer({
     setCurrentPage(1);
   };
 
+  const buildTasksCsv = (taskList: Task[]): string => {
+    const header = "Title,Priority,Status,Due date";
+    const rows = taskList.map((task) => {
+      const dueDateValue = task.dueDate
+        ? new Date(task.dueDate).toISOString()
+        : "";
+      return `${task.title},${task.priority},${task.status},${dueDateValue}`;
+    });
+    return [header, ...rows].join("\n");
+  };
+
+  const handleExportCsv = () => {
+    const csv = buildTasksCsv(tasks);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tasks-export-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   useEffect(() => {
     customFieldsStorage.setCustomFields(customFields);
   }, [customFields]);
@@ -417,6 +450,16 @@ export function TaskTableContainer({
 
       {view === "table" ? (
         <>
+          <Group>
+            <Button
+              variant="outline"
+              leftSection={<IconDownload size={16} />}
+              onClick={handleExportCsv}
+              aria-label="Export tasks to CSV"
+            >
+              Export to CSV
+            </Button>
+          </Group>
           <TaskTableControls
             searchQuery={searchQuery}
             onSearchChange={handleSearchChange}
